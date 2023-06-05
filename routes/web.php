@@ -44,6 +44,8 @@ Route::prefix('alunos')->group(function() {
     Route::get('/{id}/edit', [AlunoController::class, 'edit'])->where('id', '[0-9]+')->name('alunos.edit');
     Route::put('/{id}', [AlunoController::class, 'update'])->name('alunos.update');
     Route::delete('/{id}', [AlunoController::class, 'destroy'])->name('alunos.delete');
+    Route::get('/cpfs', [AlunoControlador::class, 'getCpfs']);
+
 });
 
 
@@ -114,7 +116,7 @@ Route::prefix('edital')->group(function() {
     Route::get('/{fileName}/termo', [EditalController::class, 'download_termo_compromisso_aluno'])->name('termo_aluno.download');
     Route::get('/{id}/disciplinas', [EditalController::class, 'listar_disciplinas'])->name('edital.listar_disciplinas');
     Route::get('/{id}/orientadores', [EditalController::class, 'listar_orientadores'])->name('edital.listar_orientadores');
-    Route::get('/cpfs', [SeuControlador::class, 'getCpfs']);
+    Route::get('/cpfs', [EditalControlador::class, 'getCpfs']);
     Route::get('/{aluno_id}/{edital_id}/editar_vinculo', [EditalController::class, 'editar_vinculo'])->name('edital.editar_vinculo');
     Route::put('/vinculo/{id}', [EditalController::class, 'updateVinculo'])->name('edital.update_vinculo');
     Route::get('/{aluno_id}/{edital_id}/delete', [EditalController::class, 'deletarVinculo'])->name('edital.aluno.delete');

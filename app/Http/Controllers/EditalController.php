@@ -34,17 +34,16 @@ class EditalController extends Controller
     }
 
     public function getCpfs() {
-    $cpfs = Aluno::select('cpf', 'nome_aluno')->get();
+        $cpfs = Aluno::select('cpf', 'nome_aluno')->get();
 
-    $data = $cpfs->map(function ($item) {
-        return [
-            'cpf' => $item->cpf,
-            'nome' => $item->nome_aluno,
-        ];
-    });
-
-    return response()->json($data);
-    }
+        $data = $cpfs->map(function ($item) {
+            return [
+                'cpf' => $item->cpf,
+                'nome' => $item->nome_aluno,
+            ];
+        });
+        return response()->json($data);
+        }
 
     /**
      * Show the form for creating a new resource.
@@ -179,8 +178,6 @@ class EditalController extends Controller
         DB::beginTransaction();
         try{
             $edital = Edital::find($id);
-
-
             $edital->descricao = $request->descricao ? $request->descricao : $edital->descricao;
             $edital->semestre = $request->semestre ? $request->semestre : $edital->semestre;
             $edital->titulo_edital = $request->titulo_edital ? $request->titulo_edital : $edital->titulo_edital;
@@ -210,7 +207,7 @@ class EditalController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {   
+    {
         try {
             $editalAlunoOrientador = EditalAlunoOrientadors::where('edital_id', $id)->first();
             if ($editalAlunoOrientador){
@@ -219,13 +216,13 @@ class EditalController extends Controller
             else{
                 DB::beginTransaction();
                 try{
-        
+
                     Edital::where("id", $id)->delete();
-        
+
                     DB::commit();
-        
+
                     return redirect()->route('programas.index')->with('sucesso', 'Edital deletado com sucesso.');
-        
+
                 } catch(exception $e){
                     DB::rollback();
                     return redirect()->back()->withErrors( "Falha ao editar Edital. tente novamente mais tarde." );
@@ -239,8 +236,8 @@ class EditalController extends Controller
     public function listar_alunos($id){
         $edital = Edital::find($id);
         $alunos = $edital->alunos('user');
-        $alunos = $edital->alunos; 
-        
+        $alunos = $edital->alunos;
+
         return view("Edital.listar_alunos", compact("alunos", "edital"));
     }
 
@@ -287,57 +284,52 @@ class EditalController extends Controller
         }
      }
 
-
-
      public function editar_vinculo($aluno_id, $edital_id){
-        $vinculo = EditalAlunoOrientadors::where('aluno_id', $aluno_id)->where('edital_id', $edital_id)->first();  
-        $aluno = Aluno::find($vinculo->aluno_id);  
-        $edital = Edital::find($vinculo->edital_id);  
-        $orientadores = Orientador::all(); 
+        $vinculo = EditalAlunoOrientadors::where('aluno_id', $aluno_id)->where('edital_id', $edital_id)->first();
+        $aluno = Aluno::find($vinculo->aluno_id);
+        $edital = Edital::find($vinculo->edital_id);
+        $orientadores = Orientador::all();
         //$vinculo = EditalAlunoOrientadors::find($id)
-        return view("Edital.editar_vinculo", compact('aluno','edital','orientadores', 'vinculo'));  
+        return view("Edital.editar_vinculo", compact('aluno','edital','orientadores', 'vinculo'));
     }
 
     public function updateVinculo(VinculoUpdateFormRequest $request, $id){
         DB::beginTransaction();
-        try { 
-            $vinculo = EditalAlunoOrientadors::find($id);  
-            $vinculo->bolsa = $request->bolsa ? $request->bolsa : $vinculo->bolsa;  
-            $vinculo->bolsista = $request->bolsista == "True" ? $request->bolsista == "True" : $vinculo->bolsista;  
-            $vinculo->info_complementares = $request->info_complementares ? $request->info_complementares : $vinculo->info_complementares;  
-            $vinculo->termo_compromisso_aluno = $request->termo_compromisso_aluno ? $request->termo_compromisso_aluno: $vinculo->termo_compromisso_aluno; 
+        try {
+            $vinculo = EditalAlunoOrientadors::find($id);
+            $vinculo->bolsa = $request->bolsa ? $request->bolsa : $vinculo->bolsa;
+            $vinculo->bolsista = $request->bolsista == "True" ? $request->bolsista == "True" : $vinculo->bolsista;
+            $vinculo->info_complementares = $request->info_complementares ? $request->info_complementares : $vinculo->info_complementares;
+            $vinculo->termo_compromisso_aluno = $request->termo_compromisso_aluno ? $request->termo_compromisso_aluno: $vinculo->termo_compromisso_aluno;
 
-            
             $vinculo->update();
 
             DB::commit();
-            
+
             //return redirect()->back()->with('sucesso', 'O vínculo foi alterado com sucesso no edital.');
             return redirect()->route('edital.vinculo', ['id' => $vinculo->edital_id])->with('sucesso', "O vínculo foi alterado com sucesso no edital.");
 
-        } catch(exception $e){ 
-             DB::rollback(); 
-             return redirect()->back()->withErrors( "Falha ao atualizar o vínculo do aluno no edital." ); 
+        } catch(exception $e){
+             DB::rollback();
+             return redirect()->back()->withErrors( "Falha ao atualizar o vínculo do aluno no edital." );
 
             }
-            //return redirect()->route('edital.vinculo', ['id' => $vinculo->edital_id])->with('success', 'O vínculo foi alterado com sucesso no edital.');
-
     }
 
 
     public function deletarVinculo($aluno_id, $edital_id){
 
         DB::beginTransaction();
-        try { 
-            $vinculo = EditalAlunoOrientadors::where("aluno_id", $aluno_id)->where('edital_id', $edital_id)->first(); 
-            $vinculo->delete(); 
+        try {
+            $vinculo = EditalAlunoOrientadors::where("aluno_id", $aluno_id)->where('edital_id', $edital_id)->first();
+            $vinculo->delete();
 
             DB::commit();
-            return redirect()->back()->with('sucesso', 'O vínculo foi deletado com sucesso do edital.'); 
+            return redirect()->back()->with('sucesso', 'O vínculo foi deletado com sucesso do edital.');
 
-        } catch(exception $e){ 
-            DB::rollback(); 
-            return redirect()->back()->withErrors( "Falha ao deletar o vínculo do aluno no edital." ); 
+        } catch(exception $e){
+            DB::rollback();
+            return redirect()->back()->withErrors( "Falha ao deletar o vínculo do aluno no edital." );
            }
     }
 

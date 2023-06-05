@@ -83,9 +83,11 @@
         <form action="{{  route('edital.aluno', ['id' => $edital->id])  }}" method="POST" enctype="multipart/form-data">
 
             @csrf
-
             <label class="titulo" for="">CPF do aluno: <strong style="color: red">*</strong></label>
-            <input type="text" id="cpf" class="boxinfo cpf-autocomplete" name="cpf" placeholder="CPF do aluno" required data-url="{{ url('/cpfs') }}">
+            <input type="text" id="cpf" class="boxinfo cpf-autocomplete" name="cpf" placeholder="CPF do aluno" required data-url="{{ url('/cpfs') }}" autocomplete="off">
+            <div id="results-container"></div>
+
+
             <br>
             <br>
             <label class="titulo" for="bolsa">Tipo da bolsa: <strong style="color: red">*</strong></label>
@@ -126,37 +128,30 @@
 </div>
 
 @endcan
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 <script  src="{{ mix('js/app.js') }}">
 
-
     $('.cpf-autocomplete').inputmask('999.999.999-99');
-
-
-
-    document.addEventListener('DOMContentLoaded', function() {
-    var cpfInput = document.querySelector('.cpf-autocomplete');
-    var url = cpfInput.getAttribute('data-url');
-
-    cpfInput.addEventListener('input', function() {
-        var cpfValue = this.value;
-
-        fetch(url)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                var filteredCpfs = data.filter(function(item) {
-                    return item.cpf.includes(cpfValue);
-                });
-                filteredCpfs.forEach(function(item) {
-                    console.log(item.cpf + ' - ' + item.nome);
-                });
-            })
-            .catch(function(error) {
-                console.log('Ocorreu um erro: ' + error);
-            });
+    console.log("asda");
+    $(function() {
+    $("#tags").autocomplete({
+        source: function(request, response) {
+        $.ajax({
+            url: "/getTagsFromDatabase", // URL para a rota que busca os dados no banco de dados
+            dataType: "json",
+            data: {
+            term: request.term // Termo de pesquisa digitado pelo usuário
+            },
+            console.log("ahsdahsd")
+            success: function(data) {
+            response(data); // Envia os dados retornados pelo servidor para o Autocomplete exibir
+            }
         });
+        }
     });
+});
 </script>
 @endsection
 

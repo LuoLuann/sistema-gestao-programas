@@ -14,37 +14,55 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
+
 class AlunoController extends Controller
-{
+    {
 
-        public function store(AlunoStoreFormRequest $request){  
-        DB::beginTransaction();
-        try {
-            $aluno = new Aluno();
-            $aluno->nome_aluno = $request->nome;
-            $aluno->cpf = $request->cpf;
-            $aluno->curso_id = $request->curso;
-            $aluno->semestre_entrada = $request->semestre_entrada;
-            if ($aluno->save()) {
-                $user = $aluno->user()->create([
-                    'name' => $request->nome,
-                    'name_social' => $request->name_social == null ? "-" : $request->name_social,
-                    'email' => $request->email,
-                    'cpf' => $request->cpf,
-                    'password' => Hash::make($request->senha)
-                ]);
-                $user->givePermissionTo('aluno');
-                $user->save();
-                DB::commit();
+    public function getCpfs(Request $request){
+        $searchTerm = $request->input('term'); // Obtém o termo de pesquisa enviado pelo Autocomplete
 
-                return redirect('/alunos')->with('sucesso', 'Aluno cadastrado com sucesso.');
-            } else {
+        $cpfs = Aluno::with("users")->select('cpf', 'nome_aluno')
+            ->where('cpf', 'LIKE', '%'.$searchTerm.'%')
+            ->get();
+
+        $data = $cpfs->map(function ($item) {
+            return [
+                'cpf' => $item->cpf,
+                'nome' => $item->nome_aluno,
+            ];
+    });
+
+    return response()->json($data);
+    }
+
+        public function store(AlunoStoreFormRequest $request){
+            DB::beginTransaction();
+            try {
+                $aluno = new Aluno();
+                $aluno->nome_aluno = $request->nome;
+                $aluno->cpf = $request->cpf;
+                $aluno->curso_id = $request->curso;
+                $aluno->semestre_entrada = $request->semestre_entrada;
+                if ($aluno->save()) {
+                    $user = $aluno->user()->create([
+                        'name' => $request->nome,
+                        'name_social' => $request->name_social == null ? "-" : $request->name_social,
+                        'email' => $request->email,
+                        'cpf' => $request->cpf,
+                        'password' => Hash::make($request->senha)
+                    ]);
+                    $user->givePermissionTo('aluno');
+                    $user->save();
+                    DB::commit();
+
+                    return redirect('/alunos')->with('sucesso', 'Aluno cadastrado com sucesso.');
+                } else {
+                    return redirect()->back()->withErrors("Falha ao cadastrar aluno. Tente novamente mais tarde.");
+                }
+            } catch (Exception $e) {
+                DB::rollback();
                 return redirect()->back()->withErrors("Falha ao cadastrar aluno. Tente novamente mais tarde.");
             }
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->withErrors("Falha ao cadastrar aluno. Tente novamente mais tarde.");
-        }
     }
 
 

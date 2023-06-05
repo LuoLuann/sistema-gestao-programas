@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "jquery": "^3.7.0",
-        "jquery-mask-plugin": "^1.14.16"
+        "jquery-mask-plugin": "^1.14.16",
+        "jquery-ui-dist": "^1.13.2"
     }
 }
